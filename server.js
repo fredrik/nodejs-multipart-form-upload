@@ -8,13 +8,14 @@ var PUBLIC = path.join(path.dirname(__filename), 'public');
 
 http.createServer(function(req, res) {
 
+  // parse a file upload using formidable
   if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
-    // parse a file upload using formidable
     var form = new formidable.IncomingForm();
       form.parse(req, function(fields, files) {
-        res.writeHead(200, {'content-type': 'text/plain'});
-        res.write('received upload:\n\n');
-        res.end(sys.inspect({fields: fields, files: files}));
+        res.writeHead(200, {'content-type': 'text/html'});
+        res.end('<textarea>heh</textarea>')
+        // res.write('received upload:\n\n');
+        // res.end(sys.inspect({fields: fields, files: files}));
       });
     return;
   }
@@ -26,9 +27,9 @@ http.createServer(function(req, res) {
       sys.log('Served Request: ' + statCode + ' ' + req.url)
     })
     .otherwise(function() {
-      res.sendHeader(404, {'Content-Type': 'text/plain'});
+      res.writeHead(404, {'Content-Type': 'text/plain'});
       res.write('Not Found');
-      res.close();
+      res.end();
     });
 
 }).listen(8000, '127.0.0.1');

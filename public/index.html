@@ -6,13 +6,15 @@
 </head>
 <body>
 
-<form action="/upload" enctype="multipart/form-data" method="post">
-  media: <input type="file" name="upload"><br>
+<form id='uploadform' action="/upload" enctype="multipart/form-data" method="post">
+  media: <input type="file" name="file"><br>
   title: <input type="text" name="title"><br>
   <input type="button" id="submit_button" value="upload">
 </form>
 
 <div id="status">INSERT DISK.</div>
+
+<div id="target" style="width: 100px; height:0px; visibility:none;">(target iframe)</div>
 
 </body>
 </html>
