@@ -1,0 +1,13 @@
+A system that will accept a multipart form upload (say, containing an audio file) while displaying a percentage progress.
+
+Specification:
+
+When the user picks a file from their computer and the form is submitted, the upload begins.
+While uploading, the status text paragraph should be updating with the
+current percentage complete at least once every 2 seconds.
+While uploading, the user should be able to enter text into the title
+text field.
+
+When the upload completes, the status text should display the path on the server to the saved file, and
+the current value of the title text field should be posted to the server. The response to the form post
+request should display both the title and the path to the file.
