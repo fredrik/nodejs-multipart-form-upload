@@ -45,6 +45,9 @@ $(document).ready(function() {
       $('#postframe').load(function() {
         var status = $('#postframe')[0].contentDocument.body.textContent;
         $('div#status').html(status);
+        // post title back to server
+        uri = '/update/'+upload_uuid;
+        $.post(uri, {'title': $('#title').val()})
       });
 
     }

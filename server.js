@@ -7,6 +7,7 @@ var sys        = require('sys'),
 var PUBLIC = path.join(path.dirname(__filename), 'public');
 
 var progresses = {}
+var metadata   = {}
 
 http.createServer(function(req, res) {
 
@@ -40,6 +41,19 @@ http.createServer(function(req, res) {
       sys.print("finished upload: "+uuid+'\n');
     });
     return;
+  }
+
+  // (update) metadata
+  regex = new RegExp('/update/(.+)');
+  match = regex.exec(req.url);
+  if (match && req.method.toLowerCase() == 'post') {
+    uuid = match[1]
+    var form = new formidable.IncomingForm();
+    form.addListener('field', function(name, value) {
+      sys.print("fresh metadata for "+uuid+": "+name+" => "+value+"\n")
+      metadata[name] = value;
+    });
+    form.parse(req);
   }
 
   // respond to progress queries.
