@@ -1,13 +1,47 @@
-A system that will accept a multipart form upload (say, containing an audio file) while displaying a percentage progress.
+A system that will accept a multipart form upload (say, containing an audio
+file) while displaying a percentage progress.
+
+
+Usage:
+
+$> node server.js
+
 
 Specification:
 
-When the user picks a file from their computer and the form is submitted, the upload begins.
-While uploading, the status text paragraph should be updating with the
-current percentage complete at least once every 2 seconds.
-While uploading, the user should be able to enter text into the title
-text field.
+When the user picks a file from their computer and the form is submitted, the
+upload begins. While uploading, the status text paragraph should be updating
+with the current percentage complete at least once every 2 seconds. While
+uploading, the user should be able to enter text into the title text field.
 
-When the upload completes, the status text should display the path on the server to the saved file, and
-the current value of the title text field should be posted to the server. The response to the form post
-request should display both the title and the path to the file.
+When the upload completes, the status text should display the path on the
+server to the saved file, and the current value of the title text field should
+be posted to the server. The response to the form post request should display
+both the title and the path to the file.
+
+
+Implementation notes:
+
+The server is implemented using Node.js. Two modules (formidable and paperboy)
+handle multipart form parsing and the serving of static files. The client
+consists of a plain html form and a sprinkle of jquery.
+
+The upload form is posted into an iframe so that the user does not move away
+from the initial page.
+
+Upload progress is polled regularly by the client. In order to keep track of
+the progress of one than one concurrent upload, the client sends a random
+identification string as a parameter to the initial file upload. This
+identification string can then be used to query the server for progress via a
+GET request to /progress/#{uuid}.
+
+When the upload is complete, a load event is triggered on the iframe. The
+response from the server ends up inside a text area in the iframe and is thus
+invisible to the user.
+
+Concurrent to reporting upload completion status to the user, the client POSTs
+the contents of the title text field to the server. The /metadata/#{uuid}
+endpoint is used for this transaction. This could be extended to allow the
+user to update the title (and other meta data) at any time during the upload
+process and have the data sent to the server in the background after each
+update to the text fields.
