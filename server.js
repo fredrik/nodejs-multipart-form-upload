@@ -6,33 +6,50 @@ var sys        = require('sys'),
 
 var PUBLIC = path.join(path.dirname(__filename), 'public');
 
+var progresses = {}
+
 http.createServer(function(req, res) {
-  var progresses = {}
+  remote = req['connection']['remoteAddress']
 
   // parse a file upload using formidable
-  if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
+  regex = new RegExp('/upload/(.+)');
+  match = regex.exec(req.url);
+  if (match && req.method.toLowerCase() == 'post') {
+    var uuid = match[1];
     var form = new formidable.IncomingForm();
     form.uploadDir = './data';
     form.keepExtensions = true;
 
+    sys.print("receiving upload from "+remote+": "+uuid+'\n');
+
     // keep track of progress.
     form.addListener('progress', function(recvd, expected) {
       progress = (recvd / expected * 100).toFixed(2);
-      progresses['unique_key'] = progress
+      progresses[uuid] = progress
     });
 
-    // done.
     form.parse(req, function(error, fields, files) {
       var path     = files['file']['path'],
           filename = files['file']['filename'],
-          mime     = files['file']['mime']
+          mime     = files['file']['mime'];
       res.writeHead(200, {'content-type': 'text/html'});
       res.write('<textarea>');
-      res.write(filename + ' landed at ' + path + '\n');
+      res.write(filename + ' landed safely at ' + path + '\n');
       res.write('</textarea>')
       res.end()
+      sys.print("finished upload: "+uuid+'\n');
     });
     return;
+  }
+
+  // respond to progress queries.
+  regex = new RegExp('/progress/(.+)');
+  match = regex.exec(req.url);
+  if (match) {
+    uuid = match[1];
+    res.writeHead(200, {'content-type': 'application/json'});
+    res.write(JSON.stringify({'progress': progresses[uuid]}));
+    res.end();
   }
 
   // let paperboy handle any static content.
