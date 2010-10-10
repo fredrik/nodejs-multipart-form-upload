@@ -9,18 +9,17 @@ var PUBLIC = path.join(path.dirname(__filename), 'public');
 var progresses = {}
 
 http.createServer(function(req, res) {
-  remote = req['connection']['remoteAddress']
 
-  // parse a file upload using formidable
+  // parse an upload using formidable.
   regex = new RegExp('/upload/(.+)');
   match = regex.exec(req.url);
   if (match && req.method.toLowerCase() == 'post') {
     var uuid = match[1];
+    sys.print("receiving upload: "+uuid+'\n');
+
     var form = new formidable.IncomingForm();
     form.uploadDir = './data';
     form.keepExtensions = true;
-
-    sys.print("receiving upload from "+remote+": "+uuid+'\n');
 
     // keep track of progress.
     form.addListener('progress', function(recvd, expected) {
@@ -34,6 +33,7 @@ http.createServer(function(req, res) {
           mime     = files['file']['mime'];
       res.writeHead(200, {'content-type': 'text/html'});
       res.write('<textarea>');
+      res.write("upload complete.\n");
       res.write(filename + ' landed safely at ' + path + '\n');
       res.write('</textarea>')
       res.end()
