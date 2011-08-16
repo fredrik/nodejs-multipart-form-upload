@@ -33,13 +33,15 @@ http.createServer(function(req, res) {
           filename = files['file']['filename'],
           mime     = files['file']['mime'];
       res.writeHead(200, {'content-type': 'text/html'});
-      res.write('<textarea>');
+      //res.write('<textarea>');
       res.write("upload complete.\n");
-      res.write(filename + ' landed safely at ' + path + '\n');
-      res.write('</textarea>')
+      res.write(filename + ':filename\n' + path + ':path\n');
+      sys.print('Users file: '+filename + ':filename\nIs server file: ' + path + ':path\n');
+      //res.write('</textarea>')
       res.end()
       sys.print("finished upload: "+uuid+'\n');
     });
+
     return;
   }
 
@@ -78,6 +80,6 @@ http.createServer(function(req, res) {
       res.end();
     });
 
-}).listen(8000, '127.0.0.1');
+}).listen(8126);
 
-sys.log('ready at http://localhost:8000/')
+sys.log('ready at http://localhost:8126/')
