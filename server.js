@@ -1,4 +1,6 @@
-var sys        = require('sys'),
+var fs         = require('fs'),
+    exec       = require('child_process').exec,
+    sys        = require('sys'),
     path       = require('path'),
     http       = require('http'),
     formidable = require('./lib/formidable'),
@@ -9,8 +11,11 @@ var PUBLIC = path.join(path.dirname(__filename), 'public');
 var progresses = {}
 var metadata   = {}
 
+var child;
+
 http.createServer(function(req, res) {
-  regex = new RegExp('/upload/(.+).srt');
+  /*TODO check for API key and non banned install id in this regex */
+  regex = new RegExp('/upload/(.+)');
   match = regex.exec(req.url);
   if (match && req.method.toLowerCase() == 'post') {
     var uuid = match[1];
@@ -31,16 +36,38 @@ http.createServer(function(req, res) {
           filename = files['file']['filename'],
           mime     = files['file']['mime'];
       res.writeHead(200, {'content-type': 'text/html'});
-      res.write("Transcription underway.\n");
+      var subtitleregex = new RegExp('(.+).srt');
+      var matchsubtitle = subtitleregex.exec(filename);
+      if(matchsubtitle){
+        res.write("Transcription is being replaced by client.\n");
+      }else{
+        res.write("Upload complete.\n");
+      }
+
       res.write(filename + ':filename\n' + path + ':path\n');
       sys.print('Users file: '+filename + ':filename\nIs server file: ' + path +  ':path\n');
-      /*TODO open the coressponding _finished.srt and paste its contents in the
-       * response res 
+      /*
+       * Rename to original name (sanitize, although it shoudl already be sanitized by the android client.)
        */
-      res.write("Here are the contents of the file");
-      res.end();
-      sys.print("Transcription returned to client: "+uuid+'\n');
-      
+      var safeFilename=filename.replace(/[^\w\.]/g,"_");
+      safeFilename=safeFilename.replace(/[;:|@&*/\\]/g,"_");
+      var datadir = "../nodejs-pocketsphinxdata/";
+      fs.renameSync(path,datadir+safeFilename);
+
+      /*TODO open the coressponding _finished.srt and paste its contents in the
+       * response res use git repository to do diffs on the srt.
+       */
+      function puts(error, stdout, stderr) { sys.puts(stdout) };
+      if(matchsubtitle){
+        //exec("cd ../nodejs-pocketsphinxdata/",puts);
+        exec("cp "+datadir+safeFilename+" "+datadir+safeFilename.replace(/_client\.srt/,"_server.srt"),puts);
+        exec("ls -al "+datadir,puts);
+
+        res.write("Here are the contents of the server's file");
+        res.end();
+        sys.print("Server's transcription was returned to client. "+'\n');
+      }
+      sys.print("Finished upload."+'\n');
     });
     
     return;
