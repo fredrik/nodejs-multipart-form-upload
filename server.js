@@ -8,8 +8,9 @@ var fs         = require('fs'),
 
 var PUBLIC = path.join(path.dirname(__filename), 'public');
 
-var progresses = {}
-var metadata   = {}
+var statuses = {};
+var progresses = {};
+var metadata   = {};
 
 var child;
 
@@ -19,6 +20,10 @@ http.createServer(function(req, res) {
   match = regex.exec(req.url);
   if (match && req.method.toLowerCase() == 'post') {
     var uuid = match[1];
+    uuid = uuid.replace(/.mp3/,"");
+    uuid = uuid.replace(/.srt/,"");
+    uuid = uuid.replace(/_client/,"");
+    uuid = uuid.replace(/_server/,"");
     sys.print("Receiving transcription request: "+uuid+'\n');
     
     var form = new formidable.IncomingForm();
@@ -39,9 +44,13 @@ http.createServer(function(req, res) {
       var subtitleregex = new RegExp('(.+).srt');
       var matchsubtitle = subtitleregex.exec(filename);
       if(matchsubtitle){
-        res.write("Transcription is being replaced by client.\n");
+        //keep track of status.
+        statuses[uuid] = "subtitles sent to client";
+        res.write("Transcription results received.\n");
       }else{
-        res.write("Upload complete.\n");
+        //keep track of status
+        statuses[uuid] = "audio received from client";
+        res.write("Dictation sent for transcription.\n");
       }
 
       res.write(filename + ':filename\n' + path + ':path\n');
@@ -61,59 +70,19 @@ http.createServer(function(req, res) {
       if(matchsubtitle){
         //exec("cd ../nodejs-pocketsphinxdata/",puts);
         exec("cp "+datadir+safeFilename+" "+datadir+safeFilename.replace(/_client\.srt/,"_server.srt"),puts);
-        exec("ls -al "+datadir,puts);
+        //exec("ls -al "+datadir,puts);
 
-        res.write("Here are the contents of the server's file");
-        res.end();
+        res.write("Here are the contents of the server's file.");
         sys.print("Server's transcription was returned to client. "+'\n');
+      }else{
+        statuses[uuid]="audio sent for processing";
+        /*open bash script, call back to change the status to finished*/
+        statuses[uuid]="transcription ready";
       }
+      res.end();
       sys.print("Finished upload."+'\n');
     });
     
-    return;
-  }
-  // parse an upload using formidable.
-  regex = new RegExp('/upload/(.+).mp3');
-  match = regex.exec(req.url);
-  if (match && req.method.toLowerCase() == 'post') {
-    var uuid = match[1];
-    sys.print("receiving upload: "+uuid+'\n');
-
-    var form = new formidable.IncomingForm();
-    form.uploadDir = './data';
-    form.keepExtensions = true;
-
-    // keep track of progress.
-    form.addListener('progress', function(recvd, expected) {
-      progress = (recvd / expected * 100).toFixed(2);
-      progresses[uuid] = progress
-    });
-
-    form.parse(req, function(error, fields, files) {
-      var path     = files['file']['path'],
-          filename = files['file']['filename'],
-          mime     = files['file']['mime'];
-      res.writeHead(200, {'content-type': 'text/html'});
-      //res.write('<textarea>');
-      res.write("Upload complete.\n");
-      res.write(filename + ':filename\n' + path + ':path\n');
-      sys.print('Users file: '+filename + ':filename\nIs server file: ' + path + ':path\n');
-      //res.write('</textarea>')
-      res.end()
-      sys.print("finished upload: "+uuid+'\n');
-    });
-    /*
-     * TODO rename file to original filename?
-     * /
-
-    /*
-     * TODO turn into raw PCM
-     */
-
-    /*
-     * TODO run though pocketshinx
-     */
-
     return;
   }
 
@@ -128,6 +97,15 @@ http.createServer(function(req, res) {
       metadata[name] = value;
     });
     form.parse(req);
+  }
+  // respond to status queries
+  regex = new RegExp('/status/(.+)');
+  match = regex.exec(req.url);
+  if (match) {
+    uuid = match[1];
+    res.writeHead(200, {'content-type': 'application/json'});
+    res.write(JSON.stringify({'status': statuses[uuid]}));
+    res.end();
   }
 
   // respond to progress queries.
