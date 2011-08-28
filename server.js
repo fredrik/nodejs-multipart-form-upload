@@ -45,11 +45,11 @@ http.createServer(function(req, res) {
       var matchsubtitle = subtitleregex.exec(filename);
       if(matchsubtitle){
         //keep track of status.
-        statuses[uuid] = "subtitles sent to client";
+        statuses[uuid] = "transcription nothing fresh";
         res.write("Transcription results received.\n");
       }else{
         //keep track of status
-        statuses[uuid] = "audio received from client";
+        statuses[uuid] = "dictation received";
         res.write("Dictation sent for transcription.\n");
       }
 
@@ -75,9 +75,9 @@ http.createServer(function(req, res) {
         res.write("Here are the contents of the server's file.");
         sys.print("Server's transcription was returned to client. "+'\n');
       }else{
-        statuses[uuid]="audio sent for processing";
+        //statuses[uuid]="dictation received";
         /*open bash script, call back to change the status to finished*/
-        statuses[uuid]="transcription ready";
+        //statuses[uuid]="transcription fresh";
       }
       res.end();
       sys.print("Finished upload."+'\n');
@@ -103,6 +103,11 @@ http.createServer(function(req, res) {
   match = regex.exec(req.url);
   if (match) {
     uuid = match[1];
+    uuid = uuid.replace(/.mp3/,"");
+    uuid = uuid.replace(/.srt/,"");
+    uuid = uuid.replace(/_client/,"");
+    uuid = uuid.replace(/_server/,"");
+
     res.writeHead(200, {'content-type': 'application/json'});
     res.write(JSON.stringify({'status': statuses[uuid]}));
     res.end();
