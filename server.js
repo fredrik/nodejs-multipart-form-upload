@@ -72,7 +72,7 @@ http.createServer(function(req, res) {
         exec("cp "+datadir+safeFilename+" "+datadir+safeFilename.replace(/_client\.srt/,"_server.srt"),puts);
         //exec("ls -al "+datadir,puts);
 
-        res.write("Here are the contents of the server's file.");
+        res.write("0:00:00.020,0:00:00.020\nBelow are the results of the machine transcription.\n\n");
         sys.print("Server's transcription was returned to client. "+'\n');
       }else{
         //statuses[uuid]="dictation received";
@@ -111,6 +111,8 @@ http.createServer(function(req, res) {
     res.writeHead(200, {'content-type': 'application/json'});
     res.write(JSON.stringify({'status': statuses[uuid]}));
     res.end();
+    sys.print("Replied to status request: "+JSON.stringify({'status': statuses[uuid]}));
+    sys.print("\n\n");
   }
 
   // respond to progress queries.
