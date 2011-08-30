@@ -138,6 +138,6 @@ http.createServer(function(req, res) {
       res.end();
     });
 
-}).listen(8126);
+}).listen(8124);
 
-sys.log('ready at http://localhost:8126/')
+sys.log('ready at http://localhost:8124/')
