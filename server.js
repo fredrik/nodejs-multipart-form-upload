@@ -45,7 +45,7 @@ http.createServer(function(req, res) {
       var matchsubtitle = subtitleregex.exec(filename);
       if(matchsubtitle){
         //keep track of status.
-        statuses[uuid] = "transcription nothing fresh";
+        statuses[uuid] = "transcription fresh";
         res.write("Transcription results received.\n");
       }else{
         //keep track of status
@@ -73,6 +73,7 @@ http.createServer(function(req, res) {
         //exec("ls -al "+datadir,puts);
 
         res.write("0:00:00.020,0:00:00.020\nBelow are the results of the machine transcription.\n\n");
+        res.write("No speech recognized, recording with a bluetooth ear piece improves the audio quality. AuBlog uses machine learning and linguistics to improve the speech recognition based on your iLanguage. The more you use AuBlog the better the recognition will get. The server will try to run the recognition again later.");
         sys.print("Server's transcription was returned to client. "+'\n');
       }else{
         //statuses[uuid]="dictation received";
