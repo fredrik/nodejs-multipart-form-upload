@@ -60,6 +60,7 @@ http.createServer(function(req, res) {
        */
       var safeFilename=filename.replace(/[^\w\.]/g,"_");
       safeFilename=safeFilename.replace(/[;:|@&*/\\]/g,"_");
+      safeFilename=safeFilename.replace(/_client\./,".");
       var datadir = "../nodejs-pocketsphinxdata/";
       fs.renameSync(path,datadir+safeFilename);
 
@@ -69,9 +70,9 @@ http.createServer(function(req, res) {
       function puts(error, stdout, stderr) { sys.puts(stdout) };
       if(matchsubtitle){
         //exec("cd ../nodejs-pocketsphinxdata/",puts);
-        exec("cp "+datadir+safeFilename+" "+datadir+safeFilename.replace(/_client\.srt/,"_server.srt"),puts);
+        //exec("cp "+datadir+safeFilename+" "+datadir+safeFilename.replace(/_client\.srt/,"_server.srt"),puts);
         //exec("ls -al "+datadir,puts);
-
+        exec("sh audio2text.sh "+ safeFilename,puts);
         res.write("0:00:00.020,0:00:00.020\nBelow are the results of the machine transcription.\n\n");
         res.write("No speech recognized, recording with a bluetooth ear piece improves the audio quality. AuBlog uses machine learning and linguistics to improve the speech recognition based on your iLanguage. The more you use AuBlog the better the recognition will get. The server will try to run the recognition again later.");
         sys.print("Server's transcription was returned to client. "+'\n');
