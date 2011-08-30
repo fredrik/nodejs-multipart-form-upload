@@ -1,5 +1,5 @@
 A system that will accept a multipart form upload (say, containing an audio
-file) while displaying a percentage progress.
+file) has hooks to find out the progress of the upload/processing or the status of the transcription.
 
 
 Usage:
