@@ -21,8 +21,12 @@ git merge User
 
 echo Converting mp3 to pcm
 
+
 echo Running pocketsphinx
-echo "Ran pocketsphinx" >> $1
+echo "0:00:00.020,0:00:00.020\nResults of the machine transcription will appear below when ready.\n\n" >> $1
+cd ../nodejs-pocketsphinx/testinstallpocketsphinx
+./hello_ps goforward.raw | grep Recognized >> ../../nodejs-pocketsphinxdata/$1
+cd ../../nodejs-pocketsphinxdata
 
 echo Committing new transcripion
 git add $1
