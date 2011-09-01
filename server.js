@@ -45,7 +45,7 @@ http.createServer(function(req, res) {
       var matchsubtitle = subtitleregex.exec(filename);
       if(matchsubtitle){
         //keep track of status.
-        statuses[uuid] = "transcription fresh";
+        statuses[uuid] = "dictation received"; //for testing
         res.write("Transcription results received.\n");
       }else{
         //keep track of status
@@ -68,13 +68,52 @@ http.createServer(function(req, res) {
        * response res use git repository to do diffs on the srt.
        */
       function puts(error, stdout, stderr) { sys.puts(stdout) };
+      function logsAndFlagsFresh(error, stdout,stderr){  
+        sys.puts(stdout);
+        statuses[uuid]="transcription fresh";
+      };
+      
       if(matchsubtitle){
         //exec("cd ../nodejs-pocketsphinxdata/",puts);
         //exec("cp "+datadir+safeFilename+" "+datadir+safeFilename.replace(/_client\.srt/,"_server.srt"),puts);
         //exec("ls -al "+datadir,puts);
-        exec("sh audio2text.sh "+ safeFilename,puts);
-        res.write("0:00:00.020,0:00:00.020\nBelow are the results of the machine transcription.\n\n");
-        res.write("No speech recognized, recording with a bluetooth ear piece improves the audio quality. AuBlog uses machine learning and linguistics to improve the speech recognition based on your iLanguage. The more you use AuBlog the better the recognition will get. The server will try to run the recognition again later.");
+        /*
+         * if just recieved the clients subtitles, and
+         * the current status is that the dictation is received,
+         * launch the PocketSphinx processing, when it comes back tag the
+         * status as fresh. Usually the next rotate screen will 
+         * download those transcriptions and prompt the user to import
+         */
+        if (statuses[uuid] === "dictation received"){
+          exec("sh audio2text.sh "+ safeFilename,logsAndFlagsFresh);
+          statuses[uuid]="transcription nothing fresh";
+        }
+        /*
+         * copy the file to the response, if the status was dictation received
+         * and we just got the client .srt, then thi should copy the client .srt
+         * with the timecode from audio2text saying that the transcription
+         * will apear below when it is ready
+         *
+         * other wise if the transcription is fresh it will provide 
+         * the transcription
+         *
+         */
+        fs.readFile(datadir+safeFilename,"binary", function(err, file){
+            if(err){
+              //res.sendHeader(500, {"Content-Type": "text/plain"});
+              res.write(err + "\n");
+            }
+            res.write(file,"binary");
+        });
+        /*
+         * if the transcription was fresh, and just sent the user the file,
+         * tag it as nothing fresh so the client wont download next time.
+         */
+        if (statuses[uuid]==="transcription fresh") {
+          statuses[uuid]="transcription nothing fresh"
+        }
+
+        //res.write("No speech recognized, recording with a bluetooth ear piece improves the audio quality. AuBlog uses machine learning and linguistics to improve the speech recognition based on your iLanguage. The more you use AuBlog the better the recognition will get. The server will try to run the recognition again later.");
         sys.print("Server's transcription was returned to client. "+'\n');
       }else{
         //statuses[uuid]="dictation received";
