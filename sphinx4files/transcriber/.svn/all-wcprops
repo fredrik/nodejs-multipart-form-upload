@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/cmusphinx/!svn/ver/10685/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber
+END
+10001-90210-01803.wav
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svnroot/cmusphinx/!svn/ver/8633/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber/10001-90210-01803.wav
+END
+README.html
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svnroot/cmusphinx/!svn/ver/9382/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber/README.html
+END
+transcriber.Manifest
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svnroot/cmusphinx/!svn/ver/10336/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber/transcriber.Manifest
+END
+config.xml
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svnroot/cmusphinx/!svn/ver/10643/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber/config.xml
+END
+digits.gram
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svnroot/cmusphinx/!svn/ver/8633/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber/digits.gram
+END
+digits.grxml
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svnroot/cmusphinx/!svn/ver/10685/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber/digits.grxml
+END
+Transcriber.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/cmusphinx/!svn/ver/9632/trunk/sphinx4/src/apps/edu/cmu/sphinx/demo/transcriber/Transcriber.java
+END
