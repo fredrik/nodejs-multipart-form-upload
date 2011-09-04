@@ -14,6 +14,14 @@ var metadata   = {};
 
 var child;
 
+function puts(error, stdout, stderr) { sys.puts(stdout) };
+function logsAndFlagsFresh(error,uuid,stdout,stderr){
+  sys.puts(stdout);
+  statuses[uuid]="transcription fresh";
+  sys.print("Processed uuid: "+uuid+" set to: "+statuses[uuid]);
+};
+
+
 http.createServer(function(req, res) {
   /*TODO check for API key and non banned install id in this regex */
   regex = new RegExp('/upload/(.+)');
@@ -41,52 +49,27 @@ http.createServer(function(req, res) {
           filename = files['file']['filename'],
           mime     = files['file']['mime'];
       res.writeHead(200, {'content-type': 'text/html'});
-      var subtitleregex = new RegExp('(.+).srt');
-      var matchsubtitle = subtitleregex.exec(filename);
-      if(matchsubtitle){
-        //keep track of status.
-        statuses[uuid] = "dictation received"; //for testing
-        res.write("Transcription results received.\n");
-      }else{
-        //keep track of status
-        statuses[uuid] = "dictation received";
-        res.write("Dictation sent for transcription.\n");
-      }
-
       res.write(filename + ':filename\n' + path + ':path\n');
       sys.print('Users file: '+filename + ':filename\nIs server file: ' + path +  ':path\n');
+
       /*
        * Rename to original name (sanitize, although it shoudl already be sanitized by the android client.)
        */
       var safeFilename=filename.replace(/[^\w\.]/g,"_");
       safeFilename=safeFilename.replace(/[;:|@&*/\\]/g,"_");
       safeFilename=safeFilename.replace(/_client\./,".");
+      safeFilename=safeFilename.replace(/\.mp3/,".amr");
       var datadir = "../nodejs-pocketsphinxdata/";
       fs.renameSync(path,datadir+safeFilename);
 
-      /*TODO open the coressponding _finished.srt and paste its contents in the
-       * response res use git repository to do diffs on the srt.
-       */
-      function puts(error, stdout, stderr) { sys.puts(stdout) };
-      function logsAndFlagsFresh(error, stdout,stderr){  
-        sys.puts(stdout);
-        statuses[uuid]="transcription fresh";
-      };
-      
+      var subtitleregex = new RegExp('(.+).srt');
+      var matchsubtitle = subtitleregex.exec(filename);
       if(matchsubtitle){
-        //exec("cd ../nodejs-pocketsphinxdata/",puts);
-        //exec("cp "+datadir+safeFilename+" "+datadir+safeFilename.replace(/_client\.srt/,"_server.srt"),puts);
-        //exec("ls -al "+datadir,puts);
-        /*
-         * if just recieved the clients subtitles, and
-         * the current status is that the dictation is received,
-         * launch the PocketSphinx processing, when it comes back tag the
-         * status as fresh. Usually the next rotate screen will 
-         * download those transcriptions and prompt the user to import
-         */
+        res.write("Transcription processed.\n");
+        {
         if (statuses[uuid] === "dictation received"){
-          exec("sh audio2text.sh "+ safeFilename,logsAndFlagsFresh);
-          statuses[uuid]="transcription nothing fresh";
+          exec("sh audio2text.sh "+ safeFilename.replace(/\.srt/,""),logsAndFlagsFresh);
+        }
         }
         /*
          * copy the file to the response, if the status was dictation received
@@ -96,7 +79,6 @@ http.createServer(function(req, res) {
          *
          * other wise if the transcription is fresh it will provide 
          * the transcription
-         *
          */
         fs.readFile(datadir+safeFilename,"binary", function(err, file){
             if(err){
@@ -105,23 +87,17 @@ http.createServer(function(req, res) {
             }
             res.write(file,"binary");
         });
-        /*
-         * if the transcription was fresh, and just sent the user the file,
-         * tag it as nothing fresh so the client wont download next time.
-         */
-        if (statuses[uuid]==="transcription fresh") {
-          statuses[uuid]="transcription nothing fresh"
-        }
-
-        //res.write("No speech recognized, recording with a bluetooth ear piece improves the audio quality. AuBlog uses machine learning and linguistics to improve the speech recognition based on your iLanguage. The more you use AuBlog the better the recognition will get. The server will try to run the recognition again later.");
+        
+        statuses[uuid]="transcription nothing fresh"
         sys.print("Server's transcription was returned to client. "+'\n');
       }else{
-        //statuses[uuid]="dictation received";
-        /*open bash script, call back to change the status to finished*/
-        //statuses[uuid]="transcription fresh";
+        //if the user just sent an mp3/amr
+        res.write("Dictation sent for transcription.\n");
+        statuses[uuid]="dictation received";
       }
       res.end();
-      sys.print("Finished upload."+'\n');
+      exec("date",puts);
+      sys.print("\tFinished upload."+'\n');
     });
     
     return;
@@ -152,7 +128,9 @@ http.createServer(function(req, res) {
     res.writeHead(200, {'content-type': 'application/json'});
     res.write(JSON.stringify({'status': statuses[uuid]}));
     res.end();
-    sys.print("Replied to status request: "+JSON.stringify({'status': statuses[uuid]}));
+    
+    exec("date",puts);
+    sys.print("\tReplied to status request: "+JSON.stringify({'status': statuses[uuid]}));
     sys.print("\n\n");
   }
 
