@@ -17,8 +17,11 @@ var child;
 function puts(error, stdout, stderr) { sys.puts(stdout) };
 function logsAndFlagsFresh(error,uuid,stdout,stderr){
   sys.puts(stdout);
-  statuses[uuid]="transcription fresh";
-  sys.print("Processed uuid: "+uuid+" set to: "+statuses[uuid]);
+  var setFresh = function(){
+    statuses[uuid]="transcription fresh";
+    sys.print("Processed uuid: "+uuid+" set to: "+statuses[uuid]);
+  }
+  return setFresh;
 };
 
 
@@ -48,8 +51,6 @@ http.createServer(function(req, res) {
       var path     = files['file']['path'],
           filename = files['file']['filename'],
           mime     = files['file']['mime'];
-      res.writeHead(200, {'content-type': 'text/html'});
-      res.write(filename + ':filename\n' + path + ':path\n');
       sys.print('Users file: '+filename + ':filename\nIs server file: ' + path +  ':path\n');
 
       /*
@@ -64,13 +65,26 @@ http.createServer(function(req, res) {
 
       var subtitleregex = new RegExp('(.+).srt');
       var matchsubtitle = subtitleregex.exec(filename);
+      res.writeHead(200, {'content-type': 'text/html'});
       if(matchsubtitle){
         res.write("Transcription processed.\n");
-        {
+        res.write(filename + ':filename\n' + path + ':path\n');
+       
         if (statuses[uuid] === "dictation received"){
-          exec("sh audio2text.sh "+ safeFilename.replace(/\.srt/,""),logsAndFlagsFresh);
+          var runTranscription = function(uuid) { 
+            var uuidchange = uuid; //local variable bound by closure
+            exec("sh audio2text.sh "+ safeFilename.replace(/\.srt/,""),puts);
+            var setFresh = function(){
+              sys.print("Processed uuid: "+uuidchange+" set to: "+statuses[uuidchange]);
+              statuses[uuidchange]="transcription fresh"; 
+            }
+            //http://stackoverflow.com/questions/111102/how-do-javascript-closures-work
+            return setFresh; 
+          }
+          var resultFresh = runTranscription(uuid);
+          setTimeout(resultFresh,10000); //this is running before exec finishes.
         }
-        }
+        
         /*
          * copy the file to the response, if the status was dictation received
          * and we just got the client .srt, then thi should copy the client .srt
@@ -87,12 +101,12 @@ http.createServer(function(req, res) {
             }
             res.write(file,"binary");
         });
-        
         statuses[uuid]="transcription nothing fresh"
         sys.print("Server's transcription was returned to client. "+'\n');
       }else{
         //if the user just sent an mp3/amr
         res.write("Dictation sent for transcription.\n");
+        res.write(filename + ':filename\n' + path + ':path\n');
         statuses[uuid]="dictation received";
       }
       res.end();
