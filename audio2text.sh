@@ -25,7 +25,7 @@ ffmpeg -y -i ../nodejs-pocketsphinxtemp/$1.amr ../nodejs-pocketsphinxtemp/$1.wav
 
 echo Running pocketsphinx
 echo "0:00:00.020,0:00:00.020\nResults of the machine transcription will appear below when ready.\n\n" >> $1.srt
-java -jar ../nodejs-pocketsphinx/sphinx4files/transcriber/bin/Transcriber.jar outwb.wav >> $1.srt 
+java -jar ../nodejs-pocketsphinx/sphinx4files/transcriber/bin/Transcriber.jar ../nodejs-pocketsphinxtemp/$1.wav >> $1.srt 
 cp $1.srt ../nodejs-pocketsphinxtemp/$1_server.srt
 #cd ../nodejs-pocketsphinx/testinstallpocketsphinx
 #./hello_ps goforward.raw | grep Recognized >> ../../nodejs-pocketsphinxdata/$1
