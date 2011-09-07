@@ -19,7 +19,7 @@ function logsAndFlagsFresh(error,uuid,stdout,stderr){
   sys.puts(stdout);
   var setFresh = function(){
     statuses[uuid]="transcription fresh";
-    sys.print("Processed uuid: "+uuid+" set to: "+statuses[uuid]);
+    sys.print("Processed uuid: "+uuid+" set to: "+statuses[uuid]+"\n\n");
   }
   return setFresh;
 };
@@ -68,7 +68,11 @@ http.createServer(function(req, res) {
       var matchsubtitle = subtitleregex.exec(filename);
       res.writeHead(200, {'content-type': 'text/html'});
       if(matchsubtitle){
-        res.write("Transcription processed.\n");
+        if(statuses[uuid] === "dictation recieved"){
+          res.write("Transcription machine is thinking...\n");
+        }else{
+          res.write("Transcription returned.\n");
+        }
         res.write(filename + ':filename\n' + path + ':path\n');
        
         if (statuses[uuid] === "dictation received"){
@@ -83,7 +87,7 @@ http.createServer(function(req, res) {
             return setFresh; 
           }
           var resultFresh = runTranscription(uuid);
-          setTimeout(resultFresh,10000); //this is running before exec finishes.
+          setTimeout(resultFresh,60000); //this is running before exec finishes.
         }
         
         /*
@@ -98,12 +102,12 @@ http.createServer(function(req, res) {
         fs.readFile(tempdir+safeFilenameServer,"binary", function(err, file){
           if(err){
             //res.sendHeader(500, {"Content-Type": "text/plain"});
-            sys.print("Returning nothing to the user");
+            sys.print("\nReturning nothing to the user\n");
             res.write("The machine transcription hasn't returned any hypotheses yet.\n");
             sys.print("The machine transcription hasn't returned any hypotheses yet.\n");
 
           }else{
-            sys.print("Returning the machine transcription to the user.");
+            sys.print("\nReturning the machine transcription to the user.\n");
             res.write(file,"binary");
             res.end();
             sys.print(file);
@@ -152,7 +156,7 @@ http.createServer(function(req, res) {
     res.end();
     
     exec("date",puts);
-    sys.print("\tReplied to status request: "+JSON.stringify({'status': statuses[uuid]}));
+    sys.print(uuid+"\nReplied to status request: "+JSON.stringify({'status': statuses[uuid]}));
     sys.print("\n\n");
   }
 
@@ -178,6 +182,6 @@ http.createServer(function(req, res) {
       res.end();
     });
 
-}).listen(8124);
+}).listen(8126);
 
-sys.log('ready at http://localhost:8124/')
+sys.log('ready at http://localhost:8126/')
