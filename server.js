@@ -58,11 +58,12 @@ http.createServer(function(req, res) {
        */
       var safeFilename=filename.replace(/[^\w\.]/g,"_");
       safeFilename=safeFilename.replace(/[;:|@&*/\\]/g,"_");
-      safeFilename=safeFilename.replace(/_client\./,".");
+      //safeFilename=safeFilename.replace(/_client\./,".");
       safeFilename=safeFilename.replace(/\.mp3/,".amr");
-      var datadir = "../nodejs-pocketsphinxdata/";
-      fs.renameSync(path,datadir+safeFilename);
-
+      var tempdir = "../nodejs-pocketsphinxtemp/";
+      fs.renameSync(path,tempdir+safeFilename);
+      safeFilenameServer = safeFilename.replace(/_client/,"_server");
+      
       var subtitleregex = new RegExp('(.+).srt');
       var matchsubtitle = subtitleregex.exec(filename);
       res.writeHead(200, {'content-type': 'text/html'});
@@ -73,10 +74,10 @@ http.createServer(function(req, res) {
         if (statuses[uuid] === "dictation received"){
           var runTranscription = function(uuid) { 
             var uuidchange = uuid; //local variable bound by closure
-            exec("sh audio2text.sh "+ safeFilename.replace(/\.srt/,""),puts);
+            exec("sh audio2text.sh "+ safeFilename.replace(/_client\.srt/,""),puts);
             var setFresh = function(){
+              statuses[uuidchange]="transcription fresh";
               sys.print("Processed uuid: "+uuidchange+" set to: "+statuses[uuidchange]);
-              statuses[uuidchange]="transcription fresh"; 
             }
             //http://stackoverflow.com/questions/111102/how-do-javascript-closures-work
             return setFresh; 
@@ -94,12 +95,19 @@ http.createServer(function(req, res) {
          * other wise if the transcription is fresh it will provide 
          * the transcription
          */
-        fs.readFile(datadir+safeFilename,"binary", function(err, file){
-            if(err){
-              //res.sendHeader(500, {"Content-Type": "text/plain"});
-              res.write(err + "\n");
-            }
+        fs.readFile(tempdir+safeFilenameServer,"binary", function(err, file){
+          if(err){
+            //res.sendHeader(500, {"Content-Type": "text/plain"});
+            sys.print("Returning nothing to the user");
+            res.write("The machine transcription hasn't returned any hypotheses yet.\n");
+            sys.print("The machine transcription hasn't returned any hypotheses yet.\n");
+
+          }else{
+            sys.print("Returning the machine transcription to the user.");
             res.write(file,"binary");
+            res.end();
+            sys.print(file);
+          }
         });
         statuses[uuid]="transcription nothing fresh"
         sys.print("Server's transcription was returned to client. "+'\n');
@@ -107,9 +115,9 @@ http.createServer(function(req, res) {
         //if the user just sent an mp3/amr
         res.write("Dictation sent for transcription.\n");
         res.write(filename + ':filename\n' + path + ':path\n');
+        res.end();
         statuses[uuid]="dictation received";
       }
-      res.end();
       exec("date",puts);
       sys.print("\tFinished upload."+'\n');
     });
