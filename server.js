@@ -78,8 +78,8 @@ http.createServer(function(req, res) {
           res.write("Processing.\n");
         }
         res.write(filename + ':filename\n' + path + ':path\n');
-       
-        if (statuses[uuid] === "dictation received"){
+       //not using closure to set fresh, instead, running sphinx every time the user uploads the srt of the same uuid. this lets the user control the transcription more.
+        if (statuses[uuid] === "dictation received" || statuses[uuid] === "transcription nothing fresh" ){
           var runTranscription = function(uuid) { 
             var uuidchange = uuid; //local variable bound by closure
             exec("sh audio2text.sh "+ safeFilename.replace(/_client\.srt/,""),puts);
