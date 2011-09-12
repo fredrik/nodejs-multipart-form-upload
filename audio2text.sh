@@ -14,7 +14,7 @@ cp ../nodejs-pocketsphinxtemp/$1_client.srt $1.srt
 echo Branching to user branch
 git checkout User
 git add *.srt
-git commit -m "added file from user"
+git commit -m "added file $1 from user"
 
 echo Branching to machinetranscription branch
 git checkout MachineTranscription
@@ -33,10 +33,10 @@ cp $1.srt ../nodejs-pocketsphinxtemp/$1_server.srt
 
 echo "Committing new transcripion"
 git add *.srt
-git commit -m "ran pocketsphinx"
+git commit -m "ran pocketsphinx on $1"
 
 
-echo "Server transcription ready, change status to transcription fresh"
+echo "Server transcription is ready."
 #git checkout master #leave it in the MachineTranascription branch so that the node will copy the right version of the file into the server's response.
 
 cd ../nodejs-pocketsphinx
