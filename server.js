@@ -7,7 +7,11 @@ var fs         = require('fs'),
     paperboy   = require('./lib/paperboy');
 
 var PUBLIC = path.join(path.dirname(__filename), 'public');
-
+var devmode = true;
+var port = 8126;
+if (devmode){
+  port = 8124;
+}
 var statuses = {};
 var progresses = {};
 var metadata   = {};
@@ -19,7 +23,7 @@ function logsAndFlagsFresh(error,uuid,stdout,stderr){
   sys.puts(stdout);
   var setFresh = function(){
     statuses[uuid]="transcription fresh";
-    sys.print("Processed uuid: "+uuid+" set to: "+statuses[uuid]+"\n\n");
+    sys.print("\nProcessed uuid: "+uuid+" set to: "+statuses[uuid]+"\n\n");
   }
   return setFresh;
 };
@@ -71,7 +75,7 @@ http.createServer(function(req, res) {
         if(statuses[uuid] === "dictation recieved"){
           res.write("Transcription machine is thinking...\n");
         }else{
-          res.write("Transcription returned.\n");
+          res.write("Processing.\n");
         }
         res.write(filename + ':filename\n' + path + ':path\n');
        
@@ -87,7 +91,7 @@ http.createServer(function(req, res) {
             return setFresh; 
           }
           var resultFresh = runTranscription(uuid);
-          setTimeout(resultFresh,60000); //this is running before exec finishes.
+          setTimeout(resultFresh,30000); //this is running before exec finishes.
         }
         
         /*
@@ -102,15 +106,19 @@ http.createServer(function(req, res) {
         fs.readFile(tempdir+safeFilenameServer,"binary", function(err, file){
           if(err){
             //res.sendHeader(500, {"Content-Type": "text/plain"});
-            sys.print("\nReturning nothing to the user\n");
-            res.write("The machine transcription hasn't returned any hypotheses yet.\n");
-            sys.print("The machine transcription hasn't returned any hypotheses yet.\n");
+            sys.print("There was an err reading the file"+err+"\nReturning nothing to the user\n");
+            //res.write("The machine transcription hasn't returned any hypotheses yet.\n");
+            //sys.print("The machine transcription hasn't returned any hypotheses yet.\n");
 
           }else{
             sys.print("\nReturning the machine transcription to the user.\n");
+            sys.print("___________________________+++_____________________\n");
             res.write(file,"binary");
             res.end();
             sys.print(file);
+            sys.print("___________________________+++_____________________\n");
+            exec("date",puts);
+            sys.print("Returned above transcription to user.\n");
           }
         });
         statuses[uuid]="transcription nothing fresh"
@@ -123,7 +131,7 @@ http.createServer(function(req, res) {
         statuses[uuid]="dictation received";
       }
       exec("date",puts);
-      sys.print("\tFinished upload."+'\n');
+      sys.print("\tFinished upload processing."+'\n');
     });
     
     return;
@@ -182,6 +190,6 @@ http.createServer(function(req, res) {
       res.end();
     });
 
-}).listen(8126);
+}).listen(port);
 
-sys.log('ready at http://localhost:8126/')
+sys.log('ready at http://localhost:'+port+'/')
