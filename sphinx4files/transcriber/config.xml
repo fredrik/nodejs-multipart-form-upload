@@ -151,7 +151,12 @@
     
 
     <!-- ******************************************************** -->
-    <!-- The Language Model configuration                         -->
+    <!-- The Language Model configuration  
+         "If you are trained small vocabulary task, 
+            take configuration from HelloWorld demo, 
+         if you trained large vocabulary task, 
+            take config from Lattice demo."
+         http://cmusphinx.sourceforge.net/sphinx4/doc/UsingSphinxTrainModels.html-->
     <!-- ******************************************************** -->
     <component name="trigramModel" 
         type="edu.cmu.sphinx.linguist.language.ngram.SimpleNGramModel">
