@@ -35,6 +35,12 @@ echo "Committing new transcripion"
 git add *.srt
 git commit -m "ran pocketsphinx on $1"
 
+echo "Processing prosody with Praat"
+praat ../nodejs-pocketsphinx/praatfiles/praat-script-syllable-nuclei-v2file.praat -25 2 0.3 yes ../nodejs-pocketsphinxtemp/$1.wav >>praatresults.csv
+
+echo "Commiting new acoustic results"
+git add praatresults.csv
+git commit -m "ran praat on $1"
 
 echo "Server transcription is ready."
 #git checkout master #leave it in the MachineTranascription branch so that the node will copy the right version of the file into the server's response.
