@@ -7,7 +7,7 @@ var fs         = require('fs'),
     paperboy   = require('./lib/paperboy');
 
 var PUBLIC = path.join(path.dirname(__filename), 'public');
-var devmode = true;
+var devmode = false;
 var port = 8126;
 if (devmode){
   port = 8124;
@@ -75,7 +75,7 @@ http.createServer(function(req, res) {
         if(statuses[uuid] === "dictation recieved"){
           res.write("Transcription machine is thinking...\n");
         }else{
-          res.write("Processing.\n");
+          res.write("Server is Processing.\n");
         }
         res.write(filename + ':filename\n' + path + ':path\n');
        //not using closure to set fresh, instead, running sphinx every time the user uploads the srt of the same uuid. this lets the user control the transcription more.
