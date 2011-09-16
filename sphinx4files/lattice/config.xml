@@ -160,7 +160,7 @@
         <property name="logMath" value="logMath"/>
         <property name="dictionary" value="dictionary"/>
         <property name="location"
-         value="./models/language/wsj/wsj5kc.Z.DMP"/>
+          value="resource:/edu/cmu/sphinx/demo/lattice/wsj5kc.Z.DMP"/>
     </component>
     
     
