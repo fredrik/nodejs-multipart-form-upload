@@ -26,7 +26,7 @@ ffmpeg -y -i ../nodejs-pocketsphinxtemp/$1.amr ../nodejs-pocketsphinxtemp/$1.wav
 
 echo ==Running pocketsphinx
 echo "0:00:00.020,0:00:00.020\nResults of the machine transcription will appear below when ready.\n\n" >> $1.srt
-java -jar ../nodejs-pocketsphinx/sphinx4files/transcriber/bin/Transcriber.jar ../nodejs-pocketsphinxtemp/$1.wav >> $1.srt 
+java -jar ../nodejs-pocketsphinx/sphinx4files/transcriber/bin/Transcriber.jar ../nodejs-pocketsphinxtemp/$1.wav 2>&1 | tee -a $1.srt 
 cp $1.srt ../nodejs-pocketsphinxtemp/$1_server.srt
 #cd ../nodejs-pocketsphinx/testinstallpocketsphinx
 #./hello_ps goforward.raw | grep Recognized >> ../../nodejs-pocketsphinxdata/$1
@@ -37,7 +37,7 @@ git add *.srt
 git commit -m "ran pocketsphinx on $1"
 
 echo "==Processing prosody with Praat"
-praat ../nodejs-pocketsphinx/praatfiles/praat-script-syllable-nuclei-v2file.praat -25 2 0.3 yes /home/gina/aublog/nodejs-pocketsphinxworkspace/nodejs-pocketsphinxtemp $1.wav | tee -a praatresults.csv
+praat ../nodejs-pocketsphinx/praatfiles/praat-script-syllable-nuclei-v2file.praat -25 2 0.3 yes /home/gina/aublog/nodejs-pocketsphinxworkspace/nodejs-pocketsphinxtemp $1.wav 2>&1 | tee -a praatresults.csv
 
 echo "==Commiting new acoustic results"
 git add praatresults.csv
