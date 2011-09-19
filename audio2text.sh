@@ -8,7 +8,7 @@ echo "======================================================="
 echo ==Moving to data folder
 cd ../nodejs-pocketsphinxdata
 
-cp ../nodejs-pocketsphinxtemp/$1_client.srt ../nodejs-pocketsphinxtemp/$1_server.srt
+touch ../nodejs-pocketsphinxtemp/$1_server.srt
 echo ==Creating files _client, _server and .srt
 cp ../nodejs-pocketsphinxtemp/$1_client.srt $1.srt
 
@@ -26,7 +26,9 @@ ffmpeg -y -i ../nodejs-pocketsphinxtemp/$1.amr ../nodejs-pocketsphinxtemp/$1.wav
 
 echo ==Running pocketsphinx
 echo "0:00:00.020,0:00:00.020\nResults of the machine transcription will appear below when ready.\n\n" >> $1.srt
-java -jar ../nodejs-pocketsphinx/sphinx4files/transcriber/bin/Transcriber.jar ../nodejs-pocketsphinxtemp/$1.wav 2>&1 | tee -a $1.srt 
+#170word gramamr: java -jar ../nodejs-pocketsphinx/sphinx4files/transcriber/bin/Transcriber.jar ../nodejs-pocketsphinxtemp/$1.wav 2>&1 | tee -a $1.srt 
+java -jar /home/gina/.groovy/lib/sphinx4/bin/LatticeDemo.jar ../nodejs-pocketsphinxtemp/$1.wav | grep "I heard:" | sed -e 's/I heard://' 2>&1 | tee -a $1.srt 
+
 cp $1.srt ../nodejs-pocketsphinxtemp/$1_server.srt
 #cd ../nodejs-pocketsphinx/testinstallpocketsphinx
 #./hello_ps goforward.raw | grep Recognized >> ../../nodejs-pocketsphinxdata/$1
