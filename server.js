@@ -1,10 +1,15 @@
-var fs = require('fs'),
-  exec = require('child_process').exec,
-  sys = require('sys'),
-  path = require('path'),
-  http = require('http'),
-  formidable = require('./lib/formidable'),
-  paperboy = require('./lib/paperboy');
+var bunyan = require('bunyan');
+var fs = require('fs');
+var exec = require('child_process').exec;
+var sys = require('sys');
+var path = require('path');
+var http = require('http');
+var formidable = require('./lib/formidable');
+var paperboy = require('./lib/paperboy');
+
+var log = bunyan.createLogger({
+  name: 'nodejs-sphinx'
+});
 
 var PUBLIC = path.join(path.dirname(__filename), 'public');
 var devmode = false;
@@ -26,13 +31,13 @@ function logsAndFlagsFresh(error, uuid, stdout, stderr) {
   sys.puts(stdout);
   var setFresh = function() {
     statuses[uuid] = "transcription fresh";
-    sys.print("\nProcessed uuid: " + uuid + " set to: " + statuses[uuid] + "\n\n");
+    log.info("\nProcessed uuid: " + uuid + " set to: " + statuses[uuid] + "\n\n");
   }
   return setFresh;
 };
 
 
-http.createServer(function(req, res) {
+var server = http.createServer(function(req, res) {
   /*TODO check for API key and non banned install id in this regex */
   regex = new RegExp('/upload/(.+)');
   match = regex.exec(req.url);
@@ -42,7 +47,7 @@ http.createServer(function(req, res) {
     uuid = uuid.replace(/.srt/, "");
     uuid = uuid.replace(/_client/, "");
     uuid = uuid.replace(/_server/, "");
-    sys.print("Receiving transcription request: " + uuid + '\n');
+    log.info("Receiving transcription request: " + uuid + '\n');
 
     var form = new formidable.IncomingForm();
     form.uploadDir = './data';
@@ -58,7 +63,7 @@ http.createServer(function(req, res) {
       var path = files['file']['path'],
         filename = files['file']['filename'],
         mime = files['file']['mime'];
-      sys.print('Users file: ' + filename + ':filename\nIs server file: ' + path + ':path\n');
+      log.info('Users file: ' + filename + ':filename\nIs server file: ' + path + ':path\n');
 
       /*
        * Rename to original name (sanitize, although it shoudl already be sanitized by the android client.)
@@ -90,7 +95,7 @@ http.createServer(function(req, res) {
             exec("sh audio2text.sh " + safeFilename.replace(/_client\.srt/, ""), puts);
             var setFresh = function() {
               statuses[uuidchange] = "transcription fresh";
-              sys.print("Processed uuid: " + uuidchange + " set to: " + statuses[uuidchange]);
+              log.info("Processed uuid: " + uuidchange + " set to: " + statuses[uuidchange]);
             }
             //http://stackoverflow.com/questions/111102/how-do-javascript-closures-work
             return setFresh;
@@ -111,23 +116,23 @@ http.createServer(function(req, res) {
         fs.readFile(tempdir + safeFilenameServer, "binary", function(err, file) {
           if (err) {
             //res.sendHeader(500, {"Content-Type": "text/plain"});
-            sys.print("There was an err reading the file" + err + "\nReturning nothing to the user\n");
+            log.info("There was an err reading the file" + err + "\nReturning nothing to the user\n");
             //res.write("The machine transcription hasn't returned any hypotheses yet.\n");
-            //sys.print("The machine transcription hasn't returned any hypotheses yet.\n");
+            //log.info("The machine transcription hasn't returned any hypotheses yet.\n");
 
           } else {
-            sys.print("\nReturning the machine transcription to the user.\n");
-            sys.print("___________________________+++_____________________\n");
+            log.info("\nReturning the machine transcription to the user.\n");
+            log.info("___________________________+++_____________________\n");
             res.write(file, "binary");
             res.end();
-            sys.print(file);
-            sys.print("___________________________+++_____________________\n");
+            log.info(file);
+            log.info("___________________________+++_____________________\n");
             exec("date", puts);
-            sys.print("Returned above transcription to user.\n");
+            log.info("Returned above transcription to user.\n");
           }
         });
         statuses[uuid] = "transcription nothing fresh"
-        sys.print("Server's transcription was returned to client. " + '\n');
+        log.info("Server's transcription was returned to client. " + '\n');
       } else {
         //if the user just sent an mp3/amr
         res.write("Dictation sent for transcription.\n");
@@ -136,9 +141,8 @@ http.createServer(function(req, res) {
         statuses[uuid] = "dictation received";
       }
       exec("date", puts);
-      sys.print("\tFinished upload processing." + '\n');
+      log.info("\tFinished upload processing." + '\n');
     });
-
     return;
   }
 
@@ -149,7 +153,7 @@ http.createServer(function(req, res) {
     uuid = match[1];
     var form = new formidable.IncomingForm();
     form.addListener('field', function(name, value) {
-      sys.print("fresh metadata for " + uuid + ": " + name + " => " + value + "\n")
+      log.info("fresh metadata for " + uuid + ": " + name + " => " + value + "\n")
       metadata[name] = value;
     });
     form.parse(req);
@@ -173,10 +177,10 @@ http.createServer(function(req, res) {
     res.end();
 
     exec("date", puts);
-    sys.print(uuid + "\nReplied to status request: " + JSON.stringify({
+    log.info(uuid + "\nReplied to status request: " + JSON.stringify({
       'status': statuses[uuid]
     }));
-    sys.print("\n\n");
+    log.info("\n\n");
   }
 
   // respond to progress queries.
@@ -208,5 +212,7 @@ http.createServer(function(req, res) {
     });
 
 }).listen(port);
+
+module.exports = server;
 
 sys.log('ready at http://localhost:' + port + '/')

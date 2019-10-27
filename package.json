@@ -22,5 +22,13 @@
   "bugs": {
     "url": "https://github.com/cesine/nodejs-sphinx/issues"
   },
-  "homepage": "https://github.com/cesine/nodejs-sphinx#readme"
+  "homepage": "https://github.com/cesine/nodejs-sphinx#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.2",
+    "supertest": "^4.0.2"
+  },
+  "dependencies": {
+    "bunyan": "^1.8.12"
+  }
 }

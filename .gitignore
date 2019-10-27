@@ -1,3 +1,6 @@
 .svn
 /hack
 /txt
+
+*.log
+node_modules
