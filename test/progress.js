@@ -13,10 +13,6 @@ describe('/progress', function() {
     return server.close();
   });
 
-  it('should load', function() {
-    expect(server.constructor.toString()).to.contain('function Server');
-  });
-
   it('should get progress', function() {
     var id = 'testprogress' + Date.now();
     app.progresses[id] = {

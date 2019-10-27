@@ -13,10 +13,6 @@ describe('/update', function() {
     return server.close();
   });
 
-  it('should load', function() {
-    expect(server.constructor.toString()).to.contain('function Server');
-  });
-
   it('should update', function() {
     var id = 'testupdate' + Date.now();
     app.metadata[id] = {

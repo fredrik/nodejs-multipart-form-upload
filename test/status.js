@@ -13,10 +13,6 @@ describe('/status', function() {
     return server.close();
   });
 
-  it('should load', function() {
-    expect(server.constructor.toString()).to.contain('function Server');
-  });
-
   it('should get status', function() {
     var id = 'teststatus' + Date.now();
     app.statuses[id] = {

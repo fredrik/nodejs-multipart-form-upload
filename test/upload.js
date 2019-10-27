@@ -13,10 +13,6 @@ describe('/upload', function() {
     return server.close();
   });
 
-  it('should load', function() {
-    expect(server.constructor.toString()).to.contain('function Server');
-  });
-
   it('should upload', function() {
     var id = 'testupload' + Date.now();
     return supertest(server)
