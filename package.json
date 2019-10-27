@@ -29,6 +29,7 @@
     "supertest": "^4.0.2"
   },
   "dependencies": {
-    "bunyan": "^1.8.12"
+    "bunyan": "^1.8.12",
+    "formidable": "^1.2.1"
   }
 }
