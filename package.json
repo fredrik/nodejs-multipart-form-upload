@@ -1,0 +1,26 @@
+{
+  "name": "nodejs-sphinx",
+  "version": "0.0.2",
+  "description": "node server which accepts audio files and runs praat and sphinx on them",
+  "main": "server.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "mocha --recursive test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cesine/nodejs-sphinx.git"
+  },
+  "keywords": [
+    "sphinx"
+  ],
+  "author": "cesine",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/cesine/nodejs-sphinx/issues"
+  },
+  "homepage": "https://github.com/cesine/nodejs-sphinx#readme"
+}
