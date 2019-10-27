@@ -1,9 +1,14 @@
 var expect = require('chai').expect;
 var supertest = require('supertest');
 
-var server = require('../server');
+var app = require('../server');
 
 describe('/upload', function() {
+  let server;
+  before(function() {
+    server = app.server.listen(0);
+  });
+
   after(function() {
     return server.close();
   });
@@ -13,8 +18,9 @@ describe('/upload', function() {
   });
 
   it('should upload', function() {
+    var id = 'testupload' + Date.now();
     return supertest(server)
-      .post('/upload/123')
+      .post('/upload/' + id)
       .set('content-type', 'multipart/form-data')
       .field('title', 'test' + Date.now())
       .field('filename', '13157700051593730_2011-09-11_15.41_1315770072221_.mp3')

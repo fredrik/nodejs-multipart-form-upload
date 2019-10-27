@@ -53,7 +53,7 @@ function handleUpload(req, res) {
   uuid = uuid.replace(/.srt/, "");
   uuid = uuid.replace(/_client/, "");
   uuid = uuid.replace(/_server/, "");
-  log.info("Receiving transcription request: " + uuid + '\n');
+  log.info("Receiving transcription request: " + uuid);
 
   var form = new formidable.IncomingForm();
   form.uploadDir = './data';
@@ -69,8 +69,10 @@ function handleUpload(req, res) {
     var path = files['file']['path'],
       filename = files['file']['filename'] || 'temp',
       mime = files['file']['mime'];
-    log.info('Users file: ' + filename + ':filename\nIs server file: ' + path + ':path\n');
-
+    log.info({
+      filename: filename,
+      path: path
+    }, 'Users file: ' + filename + ':filename\nIs server file: ' + path + ':path\n');
     /*
      * Rename to original name (sanitize, although it shoudl already be sanitized by the android client.)
      */
@@ -138,7 +140,7 @@ function handleUpload(req, res) {
         }
       });
       statuses[uuid] = "transcription nothing fresh"
-      log.info("Server's transcription was returned to client. " + '\n');
+      log.info("Server's transcription was returned to client. ");
     } else {
       //if the user just sent an mp3/amr
       res.write("Dictation sent for transcription.\n");
@@ -147,7 +149,7 @@ function handleUpload(req, res) {
       statuses[uuid] = "dictation received";
     }
     exec("date", puts);
-    log.info("\tFinished upload processing." + '\n');
+    log.info("Finished upload processing.");
   });
 }
 
@@ -156,9 +158,19 @@ function handleUpdate(req, res) {
   var form = new formidable.IncomingForm();
   form.addListener('field', function(name, value) {
     log.info("fresh metadata for " + uuid + ": " + name + " => " + value + "\n")
-    metadata[name] = value;
+    metadata[uuid] = metadata[uuid] || {};
+    metadata[uuid][name] = value;
   });
-  form.parse(req);
+  form.parse(req, function(error, fields, files) {
+    res.writeHead(200, {
+      'content-type': 'application/json'
+    });
+    res.write(JSON.stringify({
+      'metadata': metadata[uuid]
+    }));
+    log.info(metadata[uuid], 'Done parsing form');
+    res.end();
+  });
 }
 
 function handleStatus(req, res) {
@@ -177,9 +189,9 @@ function handleStatus(req, res) {
   res.end();
 
   exec("date", puts);
-  log.info(uuid + "\nReplied to status request: " + JSON.stringify({
+  log.info({
     'status': statuses[uuid]
-  }));
+  }, uuid + "\nReplied to status request: ");
   log.info("\n\n");
 }
 
@@ -259,8 +271,17 @@ var server = http.createServer(function(req, res) {
   }
 
   handleStatic(req, res);
-}).listen(port);
+})
 
-module.exports = server;
+if (!module.parent) {
+  server.listen(port);
+  log.info('ready at http://localhost:' + port + '/')
+} else {
+  module.exports = {
+    server: server,
+    statuses: statuses,
+    progresses: progresses,
+    metadata: metadata,
+  };
+}
 
-log.info('ready at http://localhost:' + port + '/')
