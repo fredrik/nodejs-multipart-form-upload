@@ -81,6 +81,7 @@ function handleUpload(req, res) {
     //safeFilename=safeFilename.replace(/_client\./,".");
     safeFilename = safeFilename.replace(/\.mp3/, ".amr");
     var tempdir = "../nodejs-pocketsphinxtemp/";
+    fs.mkdirSync(tempdir);
     fs.renameSync(path, tempdir + safeFilename);
     safeFilenameServer = safeFilename.replace(/_client/, "_server");
 
