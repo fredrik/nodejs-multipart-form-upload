@@ -17,13 +17,11 @@ describe('/upload', function() {
       .post('/upload/123')
       .set('content-type', 'multipart/form-data')
       .field('title', 'test' + Date.now())
+      .field('filename', '13157700051593730_2011-09-11_15.41_1315770072221_.mp3')
       .attach('file', '13157700051593730_2011-09-11_15.41_1315770072221_.mp3')
       .then(function(res) {
-        console.log('response', res.body);
-        expect(res.status).to.equal(500);
-      })
-      .catch(function(err) {
-        console.log('error', err);
-      })
+        expect(res.status).to.equal(200);
+        expect(res.text).to.contain('Dictation sent for transcription.\ntemp:filename\ndata/upload_');
+      });
   });
 });
