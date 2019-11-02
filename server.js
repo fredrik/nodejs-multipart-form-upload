@@ -7,7 +7,8 @@ var formidable = require('./lib/formidable');
 var paperboy = require('./lib/paperboy');
 
 var log = bunyan.createLogger({
-  name: 'nodejs-sphinx'
+  name: 'nodejs-sphinx',
+  level: process.env.LOG_LEVEL || 'warn',
 });
 
 var PUBLIC = path.join(path.dirname(__filename), 'public');
@@ -47,7 +48,7 @@ function handleError(err, req, res) {
   res.end();
 }
 
-function handleUpload(req, res) {
+function handleUpload(req, res, next) {
   var uuid = match[1];
   uuid = uuid.replace(/.mp3/, "");
   uuid = uuid.replace(/.srt/, "");
@@ -81,7 +82,14 @@ function handleUpload(req, res) {
     //safeFilename=safeFilename.replace(/_client\./,".");
     safeFilename = safeFilename.replace(/\.mp3/, ".amr");
     var tempdir = "../nodejs-pocketsphinxtemp/";
-    fs.mkdirSync(tempdir);
+    try {
+      fs.mkdirSync(tempdir);
+    } catch (err) {
+      if (err.code !== 'EEXIST') {
+        return next(err);
+      }
+      log.info(err, 'Error creating directory');
+    }
     fs.renameSync(path, tempdir + safeFilename);
     safeFilenameServer = safeFilename.replace(/_client/, "_server");
 
@@ -223,13 +231,13 @@ function handleStatic(req, res) {
     });
 }
 
-var server = http.createServer(function(req, res) {
+var server = http.createServer(function(req, res, next) {
   /*TODO check for API key and non banned install id in this regex */
   regex = new RegExp('/upload/(.+)');
   match = regex.exec(req.url);
   if (match && req.method.toLowerCase() == 'post') {
     try {
-      handleUpload(req, res);
+      handleUpload(req, res, next);
     } catch (err) {
       handleError(err, req, res);
     }
