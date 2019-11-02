@@ -45,3 +45,26 @@ endpoint is used for this transaction. This could be extended to allow the
 user to update the title (and other meta data) at any time during the upload
 process and have the data sent to the server in the background after each
 update to the text fields.
+
+
+### Sphinx
+
+* https://cmusphinx.github.io/wiki/tutorialpocketsphinx/#installation-on-unix-system
+* https://github.com/cmusphinx/sphinxbase
+* https://github.com/cmusphinx/pocketsphinx
+* https://github.com/cesine/cmuclmtk-for-nodejs
+
+
+* https://docs.bazel.build/versions/master/install-os-x.html
+* https://angular.io/guide/bazel
+* https://ij.bazel.build/docs/import-project.html
+
+
+## Development
+
+```bash
+npm install -g node-gyp
+npm install
+npm run rebuild
+npm test
+```

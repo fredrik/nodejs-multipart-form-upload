@@ -4,3 +4,19 @@
 
 *.log
 node_modules
+
+build/
+build-pre-gyp/
+Release/
+deps/*/Debug/
+*.so
+*.a
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.tlog
+*.obj
+*.1sdk.pdb
+*.lastbuildstate
+prebuilds/
+.nyc_output

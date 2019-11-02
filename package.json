@@ -7,9 +7,14 @@
     "lib": "lib"
   },
   "scripts": {
+    "install": "node-gyp-build",
+    "start": "node server.js",
     "test": "mocha --recursive test",
-    "start": "node server.js"
+    "test-prebuild": "cross-env PREBUILDS_ONLY=1 npm t",
+    "rebuild": "npm run install --build-from-source",
+    "prebuild": "prebuildify -t 8.14.0 --napi --strip"
   },
+  "gypfile": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cesine/nodejs-sphinx.git"
@@ -23,13 +28,23 @@
     "url": "https://github.com/cesine/nodejs-sphinx/issues"
   },
   "homepage": "https://github.com/cesine/nodejs-sphinx#readme",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "bunyan": "^1.8.12",
+    "formidable": "^1.2.1",
+    "napi-macros": "~2.0.0",
+    "node-gyp-build": "~4.1.0"
+  },
   "devDependencies": {
     "chai": "^4.2.0",
+    "cross-env": "^6.0.0",
     "mocha": "^6.2.2",
+    "node-gyp": "^6.0.0",
+    "prebuildify": "^3.0.0",
+    "prebuildify-ci": "^1.0.4",
     "supertest": "^4.0.2"
   },
-  "dependencies": {
-    "bunyan": "^1.8.12",
-    "formidable": "^1.2.1"
+  "engines": {
+    "node": ">=8.6.0"
   }
 }
